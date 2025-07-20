@@ -6,13 +6,10 @@ const cors = require("cors")
 
 const {sequelize} = require("./utils/db-connection")
 
-
-
-
 const userRouter = require("./routes/userRoutes") 
 
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: "http://localhost:3000  ",
   credentials: true
 }))
 app.use(express.json())

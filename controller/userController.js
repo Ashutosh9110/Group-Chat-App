@@ -1,10 +1,8 @@
 const { usersChat } = require("../models/usermodel")
 const bcrypt = require("bcrypt")
-
+const jwt = require("jsonwebtoken")
 
 const signUp = async (req, res) => {
-
-
 
   try {
   const { name, email, phone, password } = req.body
@@ -21,14 +19,32 @@ const signUp = async (req, res) => {
   } catch (error) {
       res.status(500).json({ msg : "Failed to signup the user"})
   }
+}
 
 
-
-
+const signIn = async (req, res) => {
+  try {
+    const { email, password } = req.body
+    const user = usersChat.findOne({ where: { email }})
+    if(!user){
+      return res.status(401).json({ msg : "User not found, please signup to access the chats"})
+    }
+  
+    const isPasswordValid = await bcrypt.compare(password, user.password)
+    if(!isPasswordValid){
+      return res.status(409).json({ msg : "Incorrect password."})
+    }
+  
+    const token = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET, {expiresIn: "1h"})
+    res.status(200).json({ msg : "User logged in", token})
+  } catch (error) {
+    res.status(500).json({ msg : "Failed to signin the user"})
+  }
 }
 
 
 
 module.exports = {
-  signUp
+  signUp,
+  signIn
 }
