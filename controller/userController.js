@@ -25,14 +25,14 @@ const signUp = async (req, res) => {
 const signIn = async (req, res) => {
   try {
     const { email, password } = req.body
-    const user = usersChat.findOne({ where: { email }})
+    const user = await usersChat.findOne({ where: { email }})
     if(!user){
-      return res.status(401).json({ msg : "User not found, please signup to access the chats"})
+      return res.status(404).json({ msg : "User not found, please signup to access the chats"})
     }
   
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if(!isPasswordValid){
-      return res.status(409).json({ msg : "Incorrect password."})
+      return res.status(401).json({ msg : "Incorrect password."})
     }
   
     const token = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET, {expiresIn: "1h"})
