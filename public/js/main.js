@@ -150,3 +150,12 @@ window.addEventListener("DOMContentLoaded", () => {
     loadMessages()
   }
 });
+
+
+
+setInterval(() => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    loadMessages();
+  }
+}, 2000);
