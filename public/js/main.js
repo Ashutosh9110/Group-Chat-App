@@ -139,3 +139,14 @@ async function loadMessages() {
     console.error("Error loading messages", error);
   }
 }
+
+
+
+window.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    document.getElementById("authSection").classList.add("hidden");
+    document.getElementById("chatSection").classList.remove("hidden");
+    loadMessages()
+  }
+});
