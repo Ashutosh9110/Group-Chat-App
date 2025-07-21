@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../utils/db-connection");
-
+const { chatMessage } = require("./chatModel");
 
 const usersChat = sequelize.define("usersChat", {
   id: {
@@ -25,6 +25,11 @@ const usersChat = sequelize.define("usersChat", {
     allowNull: false
   },
 })
+
+
+
+usersChat.hasMany(chatMessage);
+chatMessage.belongsTo(usersChat);
 
 
 module.exports = { usersChat }

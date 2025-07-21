@@ -57,7 +57,7 @@ const signupSection = document.getElementById("signupSection")
             document.getElementById("loginForm").reset()
             document.getElementById("authSection").classList.add("hidden")
             document.getElementById("chatSection").classList.remove("hidden")
-
+            loadMessages()
           }
       } catch (error) {
         alert("Login error: " + error.msg)
@@ -78,3 +78,64 @@ const signupSection = document.getElementById("signupSection")
     signupSection.classList.remove("hidden")
   }
 
+
+
+
+// Chat Section
+
+
+document.querySelector(".messageSendButton").addEventListener("click", async () => {
+  const message = document.querySelector(".sendMessageInputBox").value;
+
+  try {
+    const res = await fetch("http://localhost:3000/chats/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": localStorage.getItem("token"),
+      },
+      body: JSON.stringify({ message })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      const msgDiv = document.createElement("div");
+      msgDiv.innerText = `${data.sender.name}: ${data.message}`
+      document.getElementById("chatMessages").appendChild(msgDiv);
+      document.querySelector(".sendMessageInputBox").value = "";
+    } else {
+      alert(data.msg || "Failed to send message");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error sending message");
+  }
+});
+
+
+
+async function loadMessages() {
+  try {
+    const res = await fetch("http://localhost:3000/chats/all", {
+      method: "GET",
+      headers: {
+        "Authorization": localStorage.getItem("token"),
+      }
+    });
+
+    const messages = await res.json();
+
+    const chatMessagesDiv = document.getElementById("chatMessages");
+    chatMessagesDiv.innerHTML = "" // clear existing
+
+    messages.forEach((msg) => {
+      const msgDiv = document.createElement("div");
+      msgDiv.innerText = `${msg.sender.name}: ${msg.message}`;
+      chatMessagesDiv.appendChild(msgDiv);
+    });
+
+  } catch (error) {
+    console.error("Error loading messages", error);
+  }
+}
