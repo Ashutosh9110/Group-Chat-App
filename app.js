@@ -4,14 +4,14 @@ const path = require("path")
 const app = express()
 const cors = require("cors")
 
+
 const {sequelize} = require("./utils/db-connection")
 const setupAssociations = require("./models/associations");
 setupAssociations();
 
 const userRoutes = require("./routes/userRoutes") 
 const chatRoutes = require("./routes/chatRoutes")
-
-
+const groupRoutes = require("./routes/groupRoutes");
 
 app.use(cors({
   origin: "http://localhost:3000",
@@ -21,6 +21,7 @@ app.use(express.json())
 app.use(express.static('public'));
 app.use("/users", userRoutes)
 app.use("/chats", chatRoutes)
+app.use("/groups", groupRoutes);
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"))

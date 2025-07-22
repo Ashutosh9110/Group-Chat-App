@@ -3,7 +3,8 @@ const { Sequelize } = require("sequelize");
 
 const sequelize = new Sequelize("group_chat_app", "root", "1234", {
   host: "localhost",
-  dialect: "mysql"
+  dialect: "mysql",
+  logging: false
 })
 
 

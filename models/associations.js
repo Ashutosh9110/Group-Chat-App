@@ -1,20 +1,28 @@
 const { usersChat } = require("./userModel");
 const { chatMessage } = require("./chatModel");
+const { Group, GroupMember, GroupMessage } = require("../models/groupModel");
 
 function setupAssociations() {
-  usersChat.hasMany(chatMessage, {
+  usersChat.hasMany(chatMessage, { foreignKey: "userId", as: "messages" });
+  chatMessage.belongsTo(usersChat, { foreignKey: "userId", as: "sender" });
+
+  usersChat.belongsToMany(Group, {
+    through: GroupMember,
     foreignKey: "userId",
-    sourceKey: "id",  // optional but helps clarify
-    as: "messages"
+    otherKey: "groupId"
   });
 
-  chatMessage.belongsTo(usersChat, {
-    foreignKey: "userId",
-    targetKey: "id",
-    as: "sender"
+  Group.belongsToMany(usersChat, {
+    through: GroupMember,
+    foreignKey: "groupId",
+    otherKey: "userId"
   });
+
+  Group.hasMany(GroupMessage, { foreignKey: "groupId" });
+  GroupMessage.belongsTo(Group, { foreignKey: "groupId" });
+
+  usersChat.hasMany(GroupMessage, { foreignKey: "userId" });
+  GroupMessage.belongsTo(usersChat, { as: "sender", foreignKey: "userId" });
 }
 
-
-
-module.exports = setupAssociations
+module.exports = setupAssociations;

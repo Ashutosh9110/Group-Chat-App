@@ -39,12 +39,37 @@
 </div>
 
 
-<div div id="chatSection" class="hidden">
+<div id="chatSection" class="hidden">
   <h2 style="text-align: center;">Chat App</h2>
+
+  <!-- Group Controls (Moved OUTSIDE of chatMessages!) -->
+  <div id="groupControls" style="margin: 20px auto; text-align: center;">
+    <h3>Group Controls</h3>
+
+    <!-- Create New Group -->
+    <input type="text" id="newGroupName" placeholder="New Group Name" />
+    <button id="createGroupBtn">Create Group</button>
+
+    <!-- Add user to group -->
+    <input type="email" id="addUserEmail" placeholder="User Email to Add" />
+    <select id="groupSelectDropdown"></select>
+    <button id="addUserToGroupBtn">Add User to Group</button>
+  </div>
+
+  <!-- Chat Messages -->
   <div id="chatMessages" class="chatMessages">
     <!-- Messages will go here -->
   </div>
 
+  <!-- Send Message -->
+  <div id="messageSendSection" class="messageSendSection">
+    <div id="bottomBar" class="bottomBar">
+      <input type="text" class="sendMessageInputBox">
+      <button class="messageSendButton">Send</button>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+</div>
 
 
 
@@ -52,6 +77,8 @@
   <div id="bottomBar" class="bottomBar">
     <input type="text" class="sendMessageInputBox">
     <button class="messageSendButton">Send</button>
+    <button id="logoutBtn">Logout</button>
+
   </div>
 </div>
 </div>

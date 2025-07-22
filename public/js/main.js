@@ -2,6 +2,130 @@ const loginSection = document.getElementById("loginSection")
 const signupSection = document.getElementById("signupSection")
 
 
+document.addEventListener("DOMContentLoaded", async () => {
+  const groupList = document.getElementById("groupList");
+  const messageContainer = document.getElementById("messages");
+  const messageForm = document.getElementById("messageForm");
+  const messageInput = document.getElementById("messageInput");
+  let selectedGroupId = null;
+
+  async function fetchGroups() {
+    const res = await fetch("/groups/user", { headers: authHeader() });
+    const groups = await res.json();
+    groupList.innerHTML = "";
+    groupSelectDropdown.innerHTML = "<option value=''>Select Group</option>";
+
+    groups.forEach((g) => {
+      const li = document.createElement("li");
+      li.textContent = g.name;
+      li.onclick = () => selectGroup(g.id);
+      groupList.appendChild(li);
+
+      const option = document.createElement("option");
+      option.value = g.id;
+      option.textContent = g.name;
+      groupSelectDropdown.appendChild(option);  
+    });
+  }
+
+  async function selectGroup(groupId) {
+    selectedGroupId = groupId;
+    const res = await fetch(`/group-messages/${groupId}`, {
+      headers: authHeader(),
+    });
+    const messages = await res.json();
+    messageContainer.innerHTML = "";
+    messages.forEach((m) => {
+      const div = document.createElement("div");
+      div.textContent = `${m.sender.name}: ${m.message}`;
+      messageContainer.appendChild(div);
+    });
+  }
+
+  messageForm.onsubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedGroupId) return alert("Select a group first");
+    const body = JSON.stringify({ groupId: selectedGroupId, message: messageInput.value });
+    const res = await fetch("/group-messages", {
+      method: "POST",
+      headers: { ...authHeader(), "Content-Type": "application/json" },
+      body,
+    });
+    const newMsg = await res.json();
+    const div = document.createElement("div");
+    div.textContent = `${newMsg.sender.name}: ${newMsg.message}`;
+    messageContainer.appendChild(div);
+    messageInput.value = "";
+  };
+
+  function authHeader() {
+    const token = localStorage.getItem("token");
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  fetchGroups();
+});
+
+
+
+const createGroupBtn = document.getElementById("createGroupBtn");
+const addUserToGroupBtn = document.getElementById("addUserToGroupBtn");
+const newGroupNameInput = document.getElementById("newGroupName");
+const addUserEmailInput = document.getElementById("addUserEmail");
+const groupSelectDropdown = document.getElementById("groupSelectDropdown");
+
+createGroupBtn.onclick = async () => {
+  const name = newGroupNameInput.value.trim();
+  if (!name) return alert("Group name required");
+
+  try {
+    const res = await fetch("/groups/create", {
+      method: "POST",
+      headers: { ...authHeader(), "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert("Group created");
+      newGroupNameInput.value = "";
+      fetchGroups();
+    } else {
+      alert(data.msg || "Failed to create group");
+    }
+  } catch (err) {
+    console.error("Create group error:", err);
+    alert("Error creating group");
+  }
+};
+
+addUserToGroupBtn.onclick = async () => {
+  const email = addUserEmailInput.value.trim();
+  const groupId = groupSelectDropdown.value;
+
+  if (!email || !groupId) return alert("Email and group required");
+
+  try {
+    const res = await fetch("/groups/add-user", {
+      method: "POST",
+      headers: { ...authHeader(), "Content-Type": "application/json" },
+      body: JSON.stringify({ email, groupId }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert("User added to group");
+      addUserEmailInput.value = "";
+    } else {
+      alert(data.msg || "Failed to add user");
+    }
+  } catch (err) {
+    console.error("Add user error:", err);
+    alert("Error adding user to group");
+  }
+};
+
+
+
 
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
 
@@ -27,6 +151,8 @@ const signupSection = document.getElementById("signupSection")
           alert("Signup successful!");
           // Redirect or reset form
           document.getElementById("signupForm").reset();
+          loginSection.classList.remove("hidden")
+          signupSection.classList.add("hidden")
         } else {
           alert(data.msg);
         }
@@ -159,3 +285,23 @@ setInterval(() => {
     loadMessages();
   }
 }, 2000);
+
+
+
+function saveMessagesToLocalStorage(messages) {
+  localStorage.setItem("messages", JSON.stringify(messages));
+}
+
+function getMessagesFromLocalStorage() {
+  const data = localStorage.getItem("messages");
+  return data ? JSON.parse(data) : [];
+}
+
+
+
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("messages");
+  location.reload();
+});

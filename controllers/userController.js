@@ -1,4 +1,4 @@
-const { usersChat } = require("../models/usermodel")
+const { usersChat } = require("../models/userModel")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 
@@ -12,8 +12,8 @@ const signUp = async (req, res) => {
     } 
 
     bcrypt.hash(password, 10, async(err, hash) => {
-      await usersChat.create({ name, email, phone, password:hash})
-      return res.status(201).json({ msg : `User with name ${name} has been created`})
+      const newUser = await usersChat.create({ name, email, phone, password:hash})
+      return res.status(201).json({ msg : `User with name ${name} has been created`, userId: newUser.id })
     })
 
   } catch (error) {
@@ -36,7 +36,7 @@ const signIn = async (req, res) => {
     }
   
     const token = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET, {expiresIn: "1h"})
-    res.status(200).json({ msg : "User logged in", token})
+    res.status(200).json({ msg : "User logged in", token, userId: user.id })
   } catch (error) {
     res.status(500).json({ msg : "Failed to signin the user"})
   }
