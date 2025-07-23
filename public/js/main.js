@@ -449,3 +449,33 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("Logout button not found");
   }
 });
+
+
+document.getElementById("promoteUserBtn").onclick = async () => {
+  const email = document.getElementById("promoteEmail").value.trim();
+  const groupId = groupSelectDropdown.value;
+
+  const res = await fetch("http://localhost:3000/groups/promote-user", {
+    method: "POST",
+    headers: { ...authHeader(), "Content-Type": "application/json" },
+    body: JSON.stringify({ email, groupId }),
+  });
+
+  const data = await res.json();
+  alert(data.msg);
+};
+
+
+document.getElementById("removeUserBtn").onclick = async () => {
+  const email = document.getElementById("removeEmail").value.trim();
+  const groupId = groupSelectDropdown.value;
+
+  const res = await fetch("http://localhost:3000/groups/remove-user", {
+    method: "POST",
+    headers: { ...authHeader(), "Content-Type": "application/json" },
+    body: JSON.stringify({ email, groupId }),
+  });
+
+  const data = await res.json();
+  alert(data.msg);
+};

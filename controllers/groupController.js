@@ -18,6 +18,14 @@ const addUserToGroup = async (req, res) => {
     const user = await usersChat.findOne({ where: { email } });
     if (!user) return res.status(404).json({ msg: "User not found" });
 
+    const isAdmin = await GroupMember.findOne({
+      where: { userId: requesterId, groupId, isAdmin: true }
+    });
+    
+    if (!isAdmin) return res.status(403).json({ msg: "Only admins can add users" });
+    
+
+
     // Check if already a member
     const isAlreadyMember = await GroupMember.findOne({
       where: { userId: user.id, groupId }
@@ -51,7 +59,7 @@ const createGroup = async (req, res) => {
     });
 
 
-    await GroupMember.create({ userId, groupId: group.id });
+    await GroupMember.create({ userId, groupId: group.id, isAdmin: true });
     return res.status(201).json({ group });
   } catch (err) {
     console.error("❌ Error creating group:", err.message);

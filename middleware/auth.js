@@ -10,9 +10,12 @@ const authenticate = (req, res, next) => {
 
     const token = authHeader.split(" ")[1]; 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    // req.user = decoded;
+    req.user = { userId: decoded.userId }; // ✅ This line is mandatory
+
     next();
   } catch (err) {
+    console.error("JWT Error:", err);
     return res.status(401).json({ msg: "Auth failed" });
   }
 };

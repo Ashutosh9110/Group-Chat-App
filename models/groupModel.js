@@ -25,7 +25,7 @@ const GroupMember = sequelize.define("GroupMember", {
     autoIncrement: true,
     primaryKey: true,
   },
-  userId: {
+  userId: { 
     type: DataTypes.INTEGER,
     allowNull: false,
   },
