@@ -15,6 +15,8 @@ const Group = sequelize.define("Group", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+},{
+  timestamps: true,
 });
 
 const GroupMember = sequelize.define("GroupMember", {
@@ -34,6 +36,8 @@ const GroupMember = sequelize.define("GroupMember", {
 }, {
   tableName: "GroupMembers", // optional: avoids Sequelize renaming to plural
   timestamps: false
+},{
+  timestamps: true,
 });
 
 const GroupMessage = sequelize.define("GroupMessage", {
@@ -56,6 +60,8 @@ const GroupMessage = sequelize.define("GroupMessage", {
   },
 }, {
   tableName: "GroupMessages",
+},{
+  timestamps: true,
 });
 
 module.exports = {

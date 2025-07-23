@@ -42,6 +42,12 @@
 <div id="chatSection" class="hidden">
   <h2 style="text-align: center;">Chat App</h2>
 
+  <div id="groupListSection" style="text-align: center; margin-top: 20px;">
+    <h4>Your Groups</h4>
+    <ul id="groupList" style="list-style-type: none; padding: 0;"></ul>
+  </div>
+
+
   <!-- Group Controls (Moved OUTSIDE of chatMessages!) -->
   <div id="groupControls" style="margin: 20px auto; text-align: center;">
     <h3>Group Controls</h3>
@@ -56,32 +62,38 @@
     <button id="addUserToGroupBtn">Add User to Group</button>
   </div>
 
+  
+ 
   <!-- Chat Messages -->
   <div id="chatMessages" class="chatMessages">
-    <!-- Messages will go here -->
+    <!-- Messages will go here -->  
+    <div id="messages"></div>
   </div>
+
+  <form id="messageForm" style="text-align: center; margin-top: 10px;">
+    <input id="messageInput" type="text" placeholder="Type a group message" required />
+    <button type="submit">Send</button>
+  </form>
 
   <!-- Send Message -->
   <div id="messageSendSection" class="messageSendSection">
     <div id="bottomBar" class="bottomBar">
       <input type="text" class="sendMessageInputBox">
       <button class="messageSendButton">Send</button>
-      <button id="logoutBtn">Logout</button>
+      <div style="text-align: center; margin-top: 10px;">
+        <button id="logoutBtn">Logout</button>
+      </div>
     </div>
   </div>
 </div>
 
 
 
-<div id="messageSendSection" class="messageSendSection">
-  <div id="bottomBar" class="bottomBar">
-    <input type="text" class="sendMessageInputBox">
-    <button class="messageSendButton">Send</button>
-    <button id="logoutBtn">Logout</button>
-
-  </div>
-</div>
-</div>
+<!-- <form id="sendMessageForm">
+  <input type="text" id="messageInput" />
+  <select id="groupDropdown">...</select>
+  <button type="submit">Send</button>
+</form> -->
 
 
 

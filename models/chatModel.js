@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../utils/db-connection");
 
-const chatMessage = sequelize.define("ChatMessage", {
+const chatMessage = sequelize.define("chatMessage", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -14,7 +14,11 @@ const chatMessage = sequelize.define("ChatMessage", {
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
-  }
+  },
+  groupId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
 });
 
 module.exports = { chatMessage };

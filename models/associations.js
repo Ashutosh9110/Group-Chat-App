@@ -23,6 +23,13 @@ function setupAssociations() {
 
   usersChat.hasMany(GroupMessage, { foreignKey: "userId" });
   GroupMessage.belongsTo(usersChat, { as: "sender", foreignKey: "userId" });
+
+  Group.hasMany(GroupMember, { foreignKey: "groupId" });
+  GroupMember.belongsTo(Group, { foreignKey: "groupId" });
+
+// (optional if you want to get GroupMember → usersChat)
+  GroupMember.belongsTo(usersChat, { foreignKey: "userId" });
+
 }
 
 module.exports = setupAssociations;

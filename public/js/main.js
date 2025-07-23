@@ -2,16 +2,46 @@ const loginSection = document.getElementById("loginSection")
 const signupSection = document.getElementById("signupSection")
 
 
-document.addEventListener("DOMContentLoaded", async () => {
-  const groupList = document.getElementById("groupList");
-  const messageContainer = document.getElementById("messages");
-  const messageForm = document.getElementById("messageForm");
-  const messageInput = document.getElementById("messageInput");
-  let selectedGroupId = null;
+function authHeader() {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
-  async function fetchGroups() {
-    const res = await fetch("/groups/user", { headers: authHeader() });
+
+async function fetchGroups() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    console.warn("No token found. Skipping fetchGroups.");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:3000/groups/user", {
+      headers: authHeader(),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      console.error("Error fetching groups:", err);
+      alert(err.msg || "Failed to fetch groups.");
+      return;
+    }
+
     const groups = await res.json();
+
+    if (!Array.isArray(groups)) {
+      console.error("Expected groups to be an array, got:", groups);
+      return;
+    }
+
+    const groupList = document.getElementById("groupList");
+    const groupSelectDropdown = document.getElementById("groupSelectDropdown");
+
+    if (!groupList || !groupSelectDropdown) {
+      console.error("Group list or dropdown not found in DOM");
+      return;
+    }
+
     groupList.innerHTML = "";
     groupSelectDropdown.innerHTML = "<option value=''>Select Group</option>";
 
@@ -24,15 +54,49 @@ document.addEventListener("DOMContentLoaded", async () => {
       const option = document.createElement("option");
       option.value = g.id;
       option.textContent = g.name;
-      groupSelectDropdown.appendChild(option);  
+      groupSelectDropdown.appendChild(option);
     });
+
+  } catch (err) {
+    console.error("Unexpected error in fetchGroups:", err);
+    alert("Something went wrong while fetching groups.");
   }
+}
+
+async function selectGroup(groupId) {
+  const messageContainer = document.getElementById("messages");
+  const res = await fetch(`http://localhost:3000/group-messages/${groupId}`, {
+    headers: authHeader(),
+  });
+  const messages = await res.json();
+  messageContainer.innerHTML = "";
+  messages.forEach((m) => {
+    const div = document.createElement("div");
+    div.textContent = `${m.sender.name}: ${m.message}`;
+    messageContainer.appendChild(div);
+  });
+}
+
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const groupSelectDropdown = document.getElementById("groupSelectDropdown");
+  const groupList = document.getElementById("groupList");
+  const messageContainer = document.getElementById("messages");
+  const messageForm = document.getElementById("messageForm");
+  const messageInput = document.getElementById("messageInput");
+  let selectedGroupId = null;
 
   async function selectGroup(groupId) {
     selectedGroupId = groupId;
-    const res = await fetch(`/group-messages/${groupId}`, {
+    const res = await fetch(`http://localhost:3000/group-messages/${groupId}`, {
       headers: authHeader(),
     });
+
+    if (!res.ok) {
+      console.error("Failed to fetch group messages");
+      return;
+    }
+
     const messages = await res.json();
     messageContainer.innerHTML = "";
     messages.forEach((m) => {
@@ -42,15 +106,65 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  async function fetchGroups() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.warn("No token found. Skipping fetchGroups.");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:3000/groups/user", {
+        headers: authHeader(),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Error fetching groups:", err);
+        alert(err.msg || "Failed to fetch groups.");
+        return;
+      }
+
+      const groups = await res.json();
+
+      if (!Array.isArray(groups)) {
+        console.error("Expected groups to be an array, got:", groups);
+        return;
+      }
+
+      groupList.innerHTML = "";
+      groupSelectDropdown.innerHTML = "<option value=''>Select Group</option>";
+
+      groups.forEach((g) => {
+        const li = document.createElement("li");
+        li.textContent = g.name;
+        li.onclick = () => selectGroup(g.id); // ✅ now uses correct scoped selectGroup
+        groupList.appendChild(li);
+
+        const option = document.createElement("option");
+        option.value = g.id;
+        option.textContent = g.name;
+        groupSelectDropdown.appendChild(option);
+      });
+
+    } catch (err) {
+      console.error("Unexpected error in fetchGroups:", err);
+      alert("Something went wrong while fetching groups.");
+    }
+  }
+
   messageForm.onsubmit = async (e) => {
     e.preventDefault();
     if (!selectedGroupId) return alert("Select a group first");
+
     const body = JSON.stringify({ groupId: selectedGroupId, message: messageInput.value });
-    const res = await fetch("/group-messages", {
+
+    const res = await fetch("http://localhost:3000/group-messages", {
       method: "POST",
       headers: { ...authHeader(), "Content-Type": "application/json" },
       body,
     });
+
     const newMsg = await res.json();
     const div = document.createElement("div");
     div.textContent = `${newMsg.sender.name}: ${newMsg.message}`;
@@ -58,13 +172,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     messageInput.value = "";
   };
 
-  function authHeader() {
-    const token = localStorage.getItem("token");
-    return { Authorization: `Bearer ${token}` };
-  }
-
-  fetchGroups();
+  await fetchGroups(); // ✅ now uses correct fetchGroups
 });
+
 
 
 
@@ -72,14 +182,13 @@ const createGroupBtn = document.getElementById("createGroupBtn");
 const addUserToGroupBtn = document.getElementById("addUserToGroupBtn");
 const newGroupNameInput = document.getElementById("newGroupName");
 const addUserEmailInput = document.getElementById("addUserEmail");
-const groupSelectDropdown = document.getElementById("groupSelectDropdown");
 
 createGroupBtn.onclick = async () => {
   const name = newGroupNameInput.value.trim();
   if (!name) return alert("Group name required");
 
   try {
-    const res = await fetch("/groups/create", {
+    const res = await fetch("http://localhost:3000/groups/create", {
       method: "POST",
       headers: { ...authHeader(), "Content-Type": "application/json" },
       body: JSON.stringify({ name }),
@@ -102,10 +211,12 @@ addUserToGroupBtn.onclick = async () => {
   const email = addUserEmailInput.value.trim();
   const groupId = groupSelectDropdown.value;
 
-  if (!email || !groupId) return alert("Email and group required");
+  if (!email || !groupId) {
+    return alert("Email and group required");
+  }
 
   try {
-    const res = await fetch("/groups/add-user", {
+    const res = await fetch("http://localhost:3000/groups/add-user", {
       method: "POST",
       headers: { ...authHeader(), "Content-Type": "application/json" },
       body: JSON.stringify({ email, groupId }),
@@ -123,6 +234,7 @@ addUserToGroupBtn.onclick = async () => {
     alert("Error adding user to group");
   }
 };
+
 
 
 
@@ -183,9 +295,15 @@ addUserToGroupBtn.onclick = async () => {
             document.getElementById("loginForm").reset()
             document.getElementById("authSection").classList.add("hidden")
             document.getElementById("chatSection").classList.remove("hidden")
-            loadMessages()
+            
+            // loadMessages()
+            setTimeout(() => {
+              // fetchGroups();
+            }, 100); // small delay to ensure token is set
+        
           }
       } catch (error) {
+        console.error("Login error:", error);
         alert("Login error: " + error.msg)
       }
 
@@ -218,7 +336,7 @@ document.querySelector(".messageSendButton").addEventListener("click", async () 
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": localStorage.getItem("token"),
+        ...authHeader()
       },
       body: JSON.stringify({ message })
     });
@@ -245,13 +363,14 @@ async function loadMessages() {
   try {
     const res = await fetch("http://localhost:3000/chats/all", {
       method: "GET",
-      headers: {
-        "Authorization": localStorage.getItem("token"),
-      }
+      headers: authHeader()
     });
 
     const messages = await res.json();
-
+      if (!Array.isArray(messages)) {
+        console.error("Unexpected messages format:", messages);
+        return;
+      }
     const chatMessagesDiv = document.getElementById("chatMessages");
     chatMessagesDiv.innerHTML = "" // clear existing
 
@@ -273,16 +392,35 @@ window.addEventListener("DOMContentLoaded", () => {
   if (token) {
     document.getElementById("authSection").classList.add("hidden");
     document.getElementById("chatSection").classList.remove("hidden");
-    loadMessages()
+    // loadMessages()
+    // fetchGroups()
   }
 });
 
+
+// document.getElementById("sendMessageForm").addEventListener("submit", async (e) => {
+//   e.preventDefault();
+
+//   const message = document.getElementById("messageInput").value;
+//   const groupId = document.getElementById("groupDropdown").value;
+
+//   const res = await fetch("http://localhost:3000/messages", {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//       ...authHeader(), // includes JWT token
+//     },
+//     body: JSON.stringify({ message, groupId }),
+//   });
+
+//   const data = await res.json();
+//   console.log("Message post response:", data); // ✅ See what’s returned
+// });
 
 
 setInterval(() => {
   const token = localStorage.getItem("token");
   if (token) {
-    loadMessages();
   }
 }, 2000);
 
@@ -299,9 +437,15 @@ function getMessagesFromLocalStorage() {
 
 
 
-
-document.getElementById("logoutBtn").addEventListener("click", () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("messages");
-  location.reload();
+document.addEventListener("DOMContentLoaded", () => {
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("messages");
+      location.reload();
+    });
+  } else {
+    console.error("Logout button not found");
+  }
 });
