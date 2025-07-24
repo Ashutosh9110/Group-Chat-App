@@ -81,3 +81,18 @@ th { background: #f0f0f0; }
   border-radius: 4px;
   cursor: pointer;
 }
+
+
+#chatSection {
+  font-family: Arial, sans-serif;
+}
+
+#chatMessages, #groupMessagesContainer {
+  /* background: #f9f9f9; */
+  border-radius: 5px;
+}
+
+input, button {
+  padding: 6px;
+  margin: 4px 0;
+}

@@ -6,10 +6,12 @@ const postGroupMessage = async (req, res) => {
   try {
     const { message, groupId } = req.body;
     const userId = req.user.userId;
+
     const isMember = await GroupMember.findOne({ where: { userId, groupId } });
     if (!isMember) return res.status(403).json({ msg: "Not a group member" });
 
     const newMessage = await GroupMessage.create({ message, groupId, userId });
+
     const fullMessage = await GroupMessage.findOne({
       where: { id: newMessage.id },
       include: {
@@ -18,12 +20,30 @@ const postGroupMessage = async (req, res) => {
         attributes: ["name"],
       },
     });
-    res.status(201).json(fullMessage);
+
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`group_${groupId}`).emit("newMessage", {
+        groupId,
+        message: fullMessage.message,
+        sender: fullMessage.sender.name,
+        timestamp: fullMessage.createdAt,
+      });
+    }
+
+    res.status(201).json({
+      message: fullMessage.message,
+      sender: { name: fullMessage.sender.name },
+      createdAt: fullMessage.createdAt,
+    });
+
   } catch (err) {
-    console.error(err);
+    console.error("Error in postGroupMessage:", err);
     res.status(500).json({ msg: "Failed to post group message" });
   }
 };
+
+
 
 const getGroupMessages = async (req, res) => {
   try {

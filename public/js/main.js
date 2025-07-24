@@ -1,5 +1,11 @@
+const socket = io("http://localhost:5000");
+let currentGroupId = null;
+
+
 const loginSection = document.getElementById("loginSection")
 const signupSection = document.getElementById("signupSection")
+
+
 
 
 function authHeader() {
@@ -88,23 +94,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function selectGroup(groupId) {
     selectedGroupId = groupId;
+    currentGroupId = groupId;
+  
+    // Join socket room
+    socket.emit("joinGroup", groupId);
+  
+    // Fetch past messages
     const res = await fetch(`http://localhost:3000/group-messages/${groupId}`, {
       headers: authHeader(),
     });
-
-    if (!res.ok) {
-      console.error("Failed to fetch group messages");
-      return;
-    }
-
+  
+    if (!res.ok) return alert("Failed to fetch messages");
+  
     const messages = await res.json();
+    const messageContainer = document.getElementById("messages");
     messageContainer.innerHTML = "";
+  
     messages.forEach((m) => {
-      const div = document.createElement("div");
-      div.textContent = `${m.sender.name}: ${m.message}`;
-      messageContainer.appendChild(div);
+      renderMessage(m.message, m.sender.name, m.createdAt);
     });
   }
+  
 
   async function fetchGroups() {
     const token = localStorage.getItem("token");
@@ -156,26 +166,50 @@ document.addEventListener("DOMContentLoaded", async () => {
   messageForm.onsubmit = async (e) => {
     e.preventDefault();
     if (!selectedGroupId) return alert("Select a group first");
-
-    const body = JSON.stringify({ groupId: selectedGroupId, message: messageInput.value });
-
+  
+    const message = messageInput.value.trim();
+    if (!message) return;
+  
     const res = await fetch("http://localhost:3000/group-messages", {
       method: "POST",
       headers: { ...authHeader(), "Content-Type": "application/json" },
-      body,
+      body: JSON.stringify({ groupId: selectedGroupId, message }),
     });
-
+  
+    if (!res.ok) {
+      alert("Failed to send message");
+      return;
+    }
+  
     const newMsg = await res.json();
-    const div = document.createElement("div");
-    div.textContent = `${newMsg.sender.name}: ${newMsg.message}`;
-    messageContainer.appendChild(div);
+  
+    // Emit message to socket room
+    socket.emit("sendMessage", {
+      groupId: selectedGroupId,
+      message: newMsg.message,
+      sender: newMsg.sender.name,
+      timestamp: newMsg.createdAt,
+    });
+  
     messageInput.value = "";
   };
+  
 
   await fetchGroups(); // ✅ now uses correct fetchGroups
 });
 
 
+socket.on("newMessage", ({ groupId, message, sender, timestamp }) => {
+  if (groupId === currentGroupId) {
+    renderMessage(message, sender, timestamp);
+  }
+});
+
+function renderMessage(message, sender, timestamp) {
+  const msgDiv = document.createElement("div");
+  msgDiv.textContent = `${sender}: ${message}`;
+  document.getElementById("messages").appendChild(msgDiv);
+}
 
 
 const createGroupBtn = document.getElementById("createGroupBtn");
@@ -395,36 +429,17 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// document.getElementById("sendMessageForm").addEventListener("submit", async (e) => {
-//   e.preventDefault();
 
-//   const message = document.getElementById("messageInput").value;
-//   const groupId = document.getElementById("groupDropdown").value;
-
-//   const res = await fetch("http://localhost:3000/messages", {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//       ...authHeader(), // includes JWT token
-//     },
-//     body: JSON.stringify({ message, groupId }),
-//   });
-
-//   const data = await res.json();
-//   console.log("Message post response:", data); // ✅ See what’s returned
-// });
-
-
-setInterval(() => {
-  const token = localStorage.getItem("token")
-  if (token) {
-    if (selectedGroupId) {
-      selectGroup(selectedGroupId)
-    } else {
-      loadMessages()
-    }
-  }
-}, 3000);
+// setInterval(() => {
+//   const token = localStorage.getItem("token")
+//   if (token) {
+//     if (selectedGroupId) {
+//       selectGroup(selectedGroupId)
+//     } else {
+//       loadMessages()
+//     }
+//   }
+// }, 3000);
 
 
 
@@ -482,3 +497,28 @@ document.getElementById("removeUserBtn").onclick = async () => {
   const data = await res.json();
   alert(data.msg);
 };
+
+
+
+socket.on("disconnect", () => {
+  console.warn("Disconnected from server");
+});
+
+socket.on("connect", () => {
+  if (currentGroupId) {
+    socket.emit("joinGroup", currentGroupId);
+    
+  }
+});
+
+
+window.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    document.getElementById("authSection").classList.add("hidden");
+    document.getElementById("chatSection").classList.remove("hidden");
+
+    // Only load personal messages if no group selected
+    if (!selectedGroupId) loadMessages();
+  }
+});

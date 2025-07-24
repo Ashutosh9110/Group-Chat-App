@@ -3,109 +3,102 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Signup</title>
+  <title>Group Chat App</title>
   <link rel="stylesheet" href="./css/style.css">
-  <style>
-
-  </style>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
 
-    <!-- Auth Section -->
-
+  <!-- 🔐 Auth Section -->
   <div id="authSection" style="text-align: center; font-size: x-large;">
-  <div id="signupSection">
-    <h2>Sign Up</h2>
-    <form id="signupForm">
-      <input type="text" id="name" placeholder="Name" required />
-      <input type="email" id="email" placeholder="Email" required />
-      <input type="tel" id="phone" placeholder="Phone Number" required />
-      <input type="password" id="password" placeholder="Password" required />
-      <button type="submit">Sign Up</button>
-    </form>
-    <button id="switchToLogin">Already have an account? Login</button>
+    <div id="signupSection">
+      <h2>Sign Up</h2>
+      <form id="signupForm">
+        <input type="text" id="name" placeholder="Name" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="tel" id="phone" placeholder="Phone Number" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit">Sign Up</button>
+      </form>
+      <button id="switchToLogin">Already have an account? Login</button>
+    </div>
+
+    <div id="loginSection" class="hidden">
+      <h2>Sign In</h2>
+      <form id="loginForm">
+        <input id="loginEmail" type="email" placeholder="Email" required>
+        <input id="loginPassword" type="password" placeholder="Password" required>
+        <button type="submit">Sign In</button>
+      </form>
+      <button id="switchToSignup">Don't have an account? Sign Up</button>
+      <button id="forgotPasswordBtn">Forgot Password</button>
+    </div>
   </div>
 
-  <div id="loginSection" class="hidden">
-    <h2>Sign In</h2>
-    <form id="loginForm">
-      <input id="loginEmail" type="email" placeholder="Email" required>
-      <input id="loginPassword" type="password" placeholder="Password" required>
-      <button type="submit">Sign In</button>
-    </form>
-    <button id="switchToSignup" type="submit">Don't have an account? Sign Up</button>
-    <button id="forgotPasswordBtn" type="submit">Forgot Password</button>
-  </div>
-</div>
+  <!-- 💬 Chat Section -->
+  <div id="chatSection" class="hidden" style="display: flex; height: 100vh;">
 
+    <!-- 👤 Personal Chat -->
+    <div id="personalChatColumn" style="flex: 1; border-right: 1px solid #ccc; padding: 10px;">
+      <h3>Personal Chat</h3>
+      <div id="chatMessages" class="chatMessages" style="height: 80%; overflow-y: auto; border: 1px solid #eee; padding: 10px; margin-bottom: 10px;">
+        <!-- Personal messages go here -->
+      </div>
+      <div id="messageSendSection" class="messageSendSection">
+        <input type="text" class="sendMessageInputBox" placeholder="Type a personal message" style="width: 70%;" />
+        <button class="messageSendButton">Send</button>
+      </div>
+    </div>
 
-<div id="chatSection" class="hidden">
-  <h2 style="text-align: center;">Chat App</h2>
+    <!-- 👥 Group Chat -->
+    <div id="groupChatColumn" style="flex: 1; padding: 10px;">
+      <h3>Group Chat</h3>
 
-  <div id="groupListSection" style="text-align: center; margin-top: 20px; cursor: pointer;">
-    <h4>Your Groups</h4>
-    <ul id="groupList" style="list-style-type: none; padding: 0;"></ul>
-  </div>
+      <!-- Group List -->
+      <div id="groupListSection">
+        <h4>Your Groups</h4>
+        <ul id="groupList" style="list-style-type: none; padding: 0; cursor: pointer;"></ul>
+      </div>
 
+      <!-- Group Controls -->
+      <div id="groupControls">
+        <input type="text" id="newGroupName" placeholder="New Group Name" />
+        <button id="createGroupBtn">Create Group</button>
 
-  <!-- Group Controls (Moved OUTSIDE of chatMessages!) -->
-  <div id="groupControls" style="margin: 20px auto; text-align: center;">
-    <h3>Group Controls</h3>
+        <br><br>
 
-    <!-- Create New Group -->
-    <input type="text" id="newGroupName" placeholder="New Group Name" />
-    <button id="createGroupBtn">Create Group</button>
+        <input type="email" id="addUserEmail" placeholder="User Email to Add" />
+        <select id="groupSelectDropdown"></select>
+        <button id="addUserToGroupBtn">Add User to Group</button>
 
-    <!-- Add user to group -->
-    <input type="email" id="addUserEmail" placeholder="User Email to Add" />
-    <select id="groupSelectDropdown"></select>
-    <button id="addUserToGroupBtn">Add User to Group</button><br><br>
+        <br><br>
 
-    <input type="email" id="promoteEmail" placeholder="Add User Email to make an admin" />
-    <button id="promoteUserBtn">Make Admin</button>
+        <input type="email" id="promoteEmail" placeholder="Promote to Admin (Email)" />
+        <button id="promoteUserBtn">Make Admin</button>
 
-    <input type="email" id="removeEmail" placeholder="Add email to remove user" />
-    <button id="removeUserBtn">Remove User</button>
+        <input type="email" id="removeEmail" placeholder="Remove User (Email)" />
+        <button id="removeUserBtn">Remove User</button>
+      </div>
 
+      <!-- Group Chat Messages -->
+      <div id="groupMessagesContainer" style="height: 40vh; overflow-y: auto; border: 1px solid #eee; padding: 10px; margin-top: 10px;">
+        <div id="messages"></div>
+      </div>
 
-  </div>
+      <!-- Group Message Input -->
+      <form id="messageForm" style="margin-top: 10px;">
+        <input id="messageInput" type="text" placeholder="Type a group message" required style="width: 70%;" />
+        <button type="submit">Send</button>
+      </form>
 
-  
-  <form id="messageForm" style="text-align: center; margin-top: 10px;">
-    <input id="messageInput" type="text" placeholder="Type a group message" required />
-    <button type="submit">Send</button>
-  </form>
-
-  <!-- Chat Messages -->
-  <div id="chatMessages" class="chatMessages">
-    <!-- Messages will go here -->  
-    <div id="messages"></div>
-  </div>
-
- 
-  <!-- Send Message -->
-  <div id="messageSendSection" class="messageSendSection">
-    <div id="bottomBar" class="bottomBar">
-      <input type="text" class="sendMessageInputBox">
-      <button class="messageSendButton">Send</button>
-      <div style="text-align: center; margin-top: 10px;">
+      <div style="margin-top: 10px;">
         <button id="logoutBtn">Logout</button>
       </div>
     </div>
   </div>
-</div>
 
-
-
-<!-- <form id="sendMessageForm">
-  <input type="text" id="messageInput" />
-  <select id="groupDropdown">...</select>
-  <button type="submit">Send</button>
-</form> -->
-
-
-
-  
-<script src="./js/main.js"></script>
+  <!-- ✅ Scripts -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="./js/main.js"></script>
 </body>
 </html>
