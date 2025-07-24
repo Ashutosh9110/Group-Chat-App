@@ -1,5 +1,5 @@
-const { GroupMessage, GroupMember } = require("../models/groupModel");
-const { usersChat } = require("../models/userModel")
+const { GroupMessage, GroupMember } = require("../dbModels/groupModel");
+const { usersChat } = require("../dbModels/userModel")
 
 
 const postGroupMessage = async (req, res) => {

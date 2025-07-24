@@ -1,4 +1,4 @@
-const { usersChat } = require("../models/userModel")
+const { usersChat } = require("../dbModels/userModel")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 

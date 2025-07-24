@@ -42,7 +42,7 @@
 <div id="chatSection" class="hidden">
   <h2 style="text-align: center;">Chat App</h2>
 
-  <div id="groupListSection" style="text-align: center; margin-top: 20px;">
+  <div id="groupListSection" style="text-align: center; margin-top: 20px; cursor: pointer;">
     <h4>Your Groups</h4>
     <ul id="groupList" style="list-style-type: none; padding: 0;"></ul>
   </div>
@@ -64,25 +64,25 @@
     <input type="email" id="promoteEmail" placeholder="Add User Email to make an admin" />
     <button id="promoteUserBtn">Make Admin</button>
 
-    <input type="email" id="removeEmail" placeholder="Add email to remove admin" />
+    <input type="email" id="removeEmail" placeholder="Add email to remove user" />
     <button id="removeUserBtn">Remove User</button>
 
 
   </div>
 
   
- 
+  <form id="messageForm" style="text-align: center; margin-top: 10px;">
+    <input id="messageInput" type="text" placeholder="Type a group message" required />
+    <button type="submit">Send</button>
+  </form>
+
   <!-- Chat Messages -->
   <div id="chatMessages" class="chatMessages">
     <!-- Messages will go here -->  
     <div id="messages"></div>
   </div>
 
-  <form id="messageForm" style="text-align: center; margin-top: 10px;">
-    <input id="messageInput" type="text" placeholder="Type a group message" required />
-    <button type="submit">Send</button>
-  </form>
-
+ 
   <!-- Send Message -->
   <div id="messageSendSection" class="messageSendSection">
     <div id="bottomBar" class="bottomBar">

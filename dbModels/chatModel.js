@@ -15,10 +15,6 @@ const chatMessage = sequelize.define("chatMessage", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  groupId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
 });
 
 module.exports = { chatMessage };

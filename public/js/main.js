@@ -77,6 +77,7 @@ async function selectGroup(groupId) {
   });
 }
 
+let selectedGroupId = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   const groupSelectDropdown = document.getElementById("groupSelectDropdown");
@@ -84,7 +85,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const messageContainer = document.getElementById("messages");
   const messageForm = document.getElementById("messageForm");
   const messageInput = document.getElementById("messageInput");
-  let selectedGroupId = null;
 
   async function selectGroup(groupId) {
     selectedGroupId = groupId;
@@ -237,8 +237,6 @@ addUserToGroupBtn.onclick = async () => {
 
 
 
-
-
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
 
       e.preventDefault();
@@ -324,7 +322,6 @@ addUserToGroupBtn.onclick = async () => {
 
 
 
-
 // Chat Section
 
 
@@ -392,7 +389,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (token) {
     document.getElementById("authSection").classList.add("hidden");
     document.getElementById("chatSection").classList.remove("hidden");
-    // loadMessages()
+    loadMessages()
     // fetchGroups()
   }
 });
@@ -419,10 +416,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 setInterval(() => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token")
   if (token) {
+    if (selectedGroupId) {
+      selectGroup(selectedGroupId)
+    } else {
+      loadMessages()
+    }
   }
-}, 2000);
+}, 3000);
+
 
 
 

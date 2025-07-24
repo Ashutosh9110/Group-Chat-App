@@ -1,6 +1,6 @@
 const { usersChat } = require("./userModel");
 const { chatMessage } = require("./chatModel");
-const { Group, GroupMember, GroupMessage } = require("../models/groupModel");
+const { Group, GroupMember, GroupMessage } = require("../dbModels/groupModel");
 
 function setupAssociations() {
   usersChat.hasMany(chatMessage, { foreignKey: "userId", as: "messages" });

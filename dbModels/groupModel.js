@@ -33,6 +33,10 @@ const GroupMember = sequelize.define("GroupMember", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  isAdmin: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
 }, {
   tableName: "GroupMembers", // optional: avoids Sequelize renaming to plural
   timestamps: false

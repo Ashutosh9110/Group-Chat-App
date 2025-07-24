@@ -1,5 +1,5 @@
-const { Group, GroupMember } = require("../models/groupModel");
-const { usersChat } = require("../models/userModel")
+const { Group, GroupMember } = require("../dbModels/groupModel");
+const { usersChat } = require("../dbModels/userModel")
 
 const addUserToGroup = async (req, res) => {
   try {
