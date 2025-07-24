@@ -1,4 +1,4 @@
-const socket = io("http://localhost:5000");
+const socket = io("http://localhost:3000");
 let currentGroupId = null;
 
 
@@ -184,12 +184,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const newMsg = await res.json();
   
     // Emit message to socket room
-    socket.emit("sendMessage", {
-      groupId: selectedGroupId,
-      message: newMsg.message,
-      sender: newMsg.sender.name,
-      timestamp: newMsg.createdAt,
-    });
+    // socket.emit("sendMessage", {
+    //   groupId: selectedGroupId,
+    //   message: newMsg.message,
+    //   sender: newMsg.sender.name,
+    //   timestamp: newMsg.createdAt,
+    // });
   
     messageInput.value = "";
   };
@@ -211,6 +211,15 @@ function renderMessage(message, sender, timestamp) {
   document.getElementById("messages").appendChild(msgDiv);
 }
 
+socket.on("newPersonalMessage", ({ message, sender, timestamp }) => {
+  renderPersonalMessage(message, sender, timestamp);
+});
+
+function renderPersonalMessage(message, sender, timestamp) {
+  const msgDiv = document.createElement("div");
+  msgDiv.textContent = `${sender}: ${message}`;
+  document.getElementById("chatMessages").appendChild(msgDiv);
+}
 
 const createGroupBtn = document.getElementById("createGroupBtn");
 const addUserToGroupBtn = document.getElementById("addUserToGroupBtn");
@@ -322,11 +331,19 @@ addUserToGroupBtn.onclick = async () => {
         })
           const data = await res.json()
           alert(data.msg)
-          if(res.ok){
+          if (res.ok){
             localStorage.setItem("token", data.token)
+
+            const decoded = JSON.parse(atob(data.token.split('.')[1]));
+            const currentUserId = decoded.userId;
+            localStorage.setItem("currentUserId", currentUserId);
+
             document.getElementById("loginForm").reset()
             document.getElementById("authSection").classList.add("hidden")
             document.getElementById("chatSection").classList.remove("hidden")
+
+            socket.emit("registerUser", data.userId);
+
             
             // loadMessages()
             setTimeout(() => {
@@ -375,10 +392,16 @@ document.querySelector(".messageSendButton").addEventListener("click", async () 
     const data = await res.json();
 
     if (res.ok) {
-      const msgDiv = document.createElement("div");
-      msgDiv.innerText = `${data.sender.name}: ${data.message}`
-      document.getElementById("chatMessages").appendChild(msgDiv);
-      document.querySelector(".sendMessageInputBox").value = "";
+      // const msgDiv = document.createElement("div");
+      // msgDiv.innerText = `${data.sender.name}: ${data.message}`
+      // document.getElementById("chatMessages").appendChild(msgDiv);
+      // document.querySelector(".sendMessageInputBox").value = "";
+
+      socket.emit("sendPersonalMessage", {
+        recipientId: data.receiverId, // make sure backend returns this
+        message: data.message,
+        sender: data.sender.name,
+      });
     } else {
       alert(data.msg || "Failed to send message");
     }
@@ -461,6 +484,7 @@ document.addEventListener("DOMContentLoaded", () => {
     logoutBtn.addEventListener("click", () => {
       localStorage.removeItem("token");
       localStorage.removeItem("messages");
+      localStorage.removeItem("currentUserId")
       location.reload();
     });
   } else {
@@ -522,3 +546,36 @@ window.addEventListener("DOMContentLoaded", () => {
     if (!selectedGroupId) loadMessages();
   }
 });
+
+
+
+
+async function sendFile() {
+  const currentUserId = localStorage.getItem("currentUserId");
+  const fileInput = document.getElementById('fileInput');
+  const file = fileInput.files[0];
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('receiverId', currentUserId); // or formData.append('groupId', currentGroupId);
+
+  const response = await fetch('http://localhost:3000/messages/upload', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    body: formData
+  });
+
+  const data = await response.json();
+  if (data.success) {
+    console.log('File sent:', data.message);
+  }
+}
+
+
+// if (msg.isFile) {
+//   if (msg.message.endsWith('.jpg') || msg.message.endsWith('.png')) {
+//     msgDisplay.innerHTML = `<img src="${msg.message}" style="max-width:200px" />`;
+//   } else {
+//     msgDisplay.innerHTML = `<a href="${msg.message}" target="_blank">Download File</a>`;
+//   }
+// }

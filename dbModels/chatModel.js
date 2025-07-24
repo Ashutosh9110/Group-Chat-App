@@ -15,6 +15,10 @@ const chatMessage = sequelize.define("chatMessage", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  isFile: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  }
 });
 
 module.exports = { chatMessage };

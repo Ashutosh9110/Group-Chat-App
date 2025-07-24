@@ -44,6 +44,10 @@
       <div id="chatMessages" class="chatMessages" style="height: 80%; overflow-y: auto; border: 1px solid #eee; padding: 10px; margin-bottom: 10px;">
         <!-- Personal messages go here -->
       </div>
+
+      <input type="file" id="fileInput" />
+      <button onclick="sendFile()">Send File</button>
+
       <div id="messageSendSection" class="messageSendSection">
         <input type="text" class="sendMessageInputBox" placeholder="Type a personal message" style="width: 70%;" />
         <button class="messageSendButton">Send</button>
@@ -90,6 +94,10 @@
         <input id="messageInput" type="text" placeholder="Type a group message" required style="width: 70%;" />
         <button type="submit">Send</button>
       </form>
+
+      <input type="file" id="fileInput" />
+      <button onclick="sendFile()">Send File</button>
+
 
       <div style="margin-top: 10px;">
         <button id="logoutBtn">Logout</button>

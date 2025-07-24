@@ -7,9 +7,6 @@ const postMessage = async (req, res) => {
 
   const { message } = req.body;
 
-    // if (!groupId) {
-    //   return res.status(400).json({ msg: "Group ID is required to send a message." });
-    // }
   const userId = req.user.userId
   try {
 
@@ -26,6 +23,15 @@ const postMessage = async (req, res) => {
         attributes: ["name"]
       }
     });
+    
+    const io = req.app.get("io"); // 👈 ensure socket.io instance is available
+    if (io) {
+      io.emit("newPersonalMessage", {
+        message: fullMessage.message,
+        sender: fullMessage.sender.name,
+        timestamp: fullMessage.createdAt,
+      });
+    }
     res.status(201).json(fullMessage);
   
   } catch (err) {
