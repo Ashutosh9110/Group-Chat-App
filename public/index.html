@@ -45,9 +45,11 @@
         <!-- Personal messages go here -->
       </div>
 
-      <input type="file" id="fileInput" />
-      <button onclick="sendFile()">Send File</button>
+      <input type="file" id="personalFileInput" />
+      <button onclick="sendFile('personal')">Send File</button>
+      <p id="fileStatus" style="color: red;"></p>
 
+      
       <div id="messageSendSection" class="messageSendSection">
         <input type="text" class="sendMessageInputBox" placeholder="Type a personal message" style="width: 70%;" />
         <button class="messageSendButton">Send</button>
@@ -95,8 +97,8 @@
         <button type="submit">Send</button>
       </form>
 
-      <input type="file" id="fileInput" />
-      <button onclick="sendFile()">Send File</button>
+      <input type="file" id="groupFileInput" />
+      <button onclick="sendFile('group')">Send File</button>
 
 
       <div style="margin-top: 10px;">

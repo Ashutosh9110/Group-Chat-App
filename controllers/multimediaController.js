@@ -1,10 +1,13 @@
-// controllers/messageController.js
 const { chatMessage } = require("../dbModels/chatModel");
 
 const uploadFileMessage = async (req, res) => {
+  console.log(">>> req.file:", req.file); // ADD THIS
+  console.log(">>> req.body:", req.body); // Also useful
+
   try {
     const { receiverId, groupId } = req.body; // if group, use groupId
     const filePath = req.file.path;
+    console.log("req.file:", req.file); // Should be defined
 
     const message = await chatMessage.create({
       message: filePath,
@@ -13,13 +16,16 @@ const uploadFileMessage = async (req, res) => {
       groupId: groupId || null,
       isFile: true
     });
+  // Emit via socket to relevant room
+  req.app.get('io').emit(groupId ? `group_${groupId}` : `user:${receiverId}`, {
+    message: filePath,
+    senderId: req.user.id,
+    type: 'file',
+    timestamp: new Date().toISOString()
+  });
+  
 
-    // Emit via socket to relevant room
-    req.app.get('io').emit(groupId ? `group:${groupId}` : `user:${receiverId}`, {
-      message,
-      senderId: req.user.userId,
-    });
-
+  
     res.status(200).json({ success: true, message });
   } catch (err) {
     console.error(err);

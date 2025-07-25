@@ -8,12 +8,15 @@ const { Server } = require("socket.io");
 const {sequelize} = require("./utils/db-connection")
 const setupAssociations = require("./dbModels/associations");
 setupAssociations();
+const { ArchivedChat } = require('./dbModels/archivedChat'); 
+
+require('./cron/archiveMessages');
 
 const userRoutes = require("./routes/userRoutes") 
 const chatRoutes = require("./routes/chatRoutes")
 const groupRoutes = require("./routes/groupRoutes");
 const messageRoutes = require("./routes/messageRoutes");
-
+const multimediaRoutes = require("./routes/multimediaRoutes")
 
 const app = express();
 const http = require("http").createServer(app);
@@ -33,6 +36,7 @@ app.use("/users", userRoutes)
 app.use("/chats", chatRoutes)
 app.use("/groups", groupRoutes)
 app.use("/group-messages", messageRoutes)
+app.use("/messages", multimediaRoutes)
 app.use('/messages', express.static('uploads'));
 
 // Default route
@@ -41,6 +45,7 @@ app.get("/", (req, res) => {
 })
 
 
+app.set("io", io);
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
@@ -100,7 +105,7 @@ io.on("connection", (socket) => {
 
 // DB Sync + Server Start
 sequelize.sync().then(() => {
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.PORT;
   http.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });

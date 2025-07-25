@@ -11,7 +11,8 @@ const authenticate = (req, res, next) => {
     const token = authHeader.split(" ")[1]; 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     // req.user = decoded;
-    req.user = { userId: decoded.userId }; // ✅ This line is mandatory
+    
+    req.user = { userId: decoded.userId }
 
     next();
   } catch (err) {
